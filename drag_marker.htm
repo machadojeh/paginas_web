@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!-- saved from url=(0046)http://econym.org.uk/gmap/example_snapdrag.htm -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Google Maps</title>
+    <script src="./drga_marker_files/maps" type="text/javascript"></script><style type="text/css"></style><script src="./drga_marker_files/main.js" type="text/javascript"></script><style type="text/css">@media print{.gmnoprint{display:none}}@media screen{.gmnoscreen{display:none}}</style>
+    <script src="./drga_marker_files/epoly.js" type="text/javascript"></script>
+  <script type="text/javascript" charset="UTF-8" src="./drga_marker_files/{mod_drag,mod_ctrapi,mod_apidir}.js"></script><script>window["_GOOG_TRANS_EXT_VER"] = "1";</script></head>
+  <body onunload="GUnload()">
+
+    Click on the map and the marker will be added on the nearest known street.<br>
+    Drag the marker and it will snap again at the dragged position.
+
+    <div id="map" style="width: 800px; height: 600px; position: relative; background-color: rgb(229, 227, 223);"></div>
+    <a href="http://econym.org.uk/gmap/snap.htm">Back to the tutorial page</a>
+
+    <noscript>&lt;b&gt;JavaScript must be enabled in order for you to use Google Maps.&lt;/b&gt; 
+      However, it seems JavaScript is either disabled or not supported by your browser. 
+      To view Google Maps, enable JavaScript by changing your browser options, and then 
+      try again.
+    </noscript>
+
+    <script type="text/javascript">
+    //<![CDATA[
+    if (GBrowserIsCompatible()) {
+
+      var lastmarker;
+	  var mark = 0;
+ 
+      var map = new GMap2(document.getElementById("map"));
+      map.setCenter(new GLatLng(53.7877, -2.9832),15)
+      map.addControl(new GLargeMapControl());
+      map.addControl(new GMapTypeControl());
+      // == use different GDirections for adding and dragging, it is just simpler that way ==
+      var dirn1 = new GDirections();
+      var dirn2 = new GDirections();
+
+      GEvent.addListener(map, "click", function(overlay,point) {
+        // == When the user clicks on a the map, get directiobns from that point to itself ==
+        if (!overlay) {
+          dirn1.loadFromWaypoints([point.toUrlValue(6),point.toUrlValue(6)],{getPolyline:true});
+        }
+      });
+
+      function createMarker(p) {
+		var icone = new GIcon(G_DEFAULT_ICON);
+		//icone.image = 'http://i556.photobucket.com/albums/ss6/pbenelau/Foods/cupcake.png';
+		icone.image = 'http://img829.imageshack.us/img829/4291/busoo.png'
+		icone.iconSize = new GSize(40, 40);
+        var marker = new GMarker(p,{draggable:true, icon: icone});
+        GEvent.addListener(marker, "dragend", function() {
+          lastmarker = marker;
+          var point = marker.getPoint();
+          dirn2.loadFromWaypoints([point.toUrlValue(6),point.toUrlValue(6)],{getPolyline:true});
+        });
+        return marker;
+      }
+
+      // == when the "add marker" load event completes, plot the point on the street ==
+      GEvent.addListener(dirn1,"load", function() {
+		if(!mark){ //grava apenas 1 marcador
+			var p=dirn1.getPolyline().getVertex(0);
+			var marker=createMarker(p);
+			map.addOverlay(marker);
+			mark = 1;
+		}        
+      });
+
+      // == when the "drag marker" load event completes, move the marker ==
+      GEvent.addListener(dirn2,"load", function() {
+        var p=dirn2.getPolyline().getVertex(0);
+        lastmarker.setPoint(p);
+      });
+
+      GEvent.addListener(dirn1,"error", function() {
+        GLog.write("Failed: "+dirn1.getStatus().code);
+      });
+      GEvent.addListener(dirn2,"error", function() {
+        GLog.write("Failed: "+dirn2.getStatus().code);
+      });
+
+    }
+    else {
+      alert("Sorry, the Google Maps API is not compatible with this browser");
+    }
+
+    // This Javascript is based on code provided by the
+    // Community Church Javascript Team
+    // http://www.bisphamchurch.org.uk/   
+    // http://econym.org.uk/gmap/
+
+
+    //]]>
+    </script>
+  </body></html>
